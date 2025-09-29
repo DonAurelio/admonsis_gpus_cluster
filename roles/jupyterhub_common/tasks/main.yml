@@ -27,7 +27,8 @@
       wheel \
       jupyterhub==4.1.5 \
       jupyterlab \
-      ipywidgets
+      ipywidgets \
+      batchspawner
 
 - name: Ensure symlinks for JupyterHub/Lab executables in /usr/local/bin
   file:
