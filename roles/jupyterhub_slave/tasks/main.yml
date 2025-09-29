@@ -1,0 +1,15 @@
+- name: Install JupyterHub singleuser environment
+  command: |
+    /opt/jupyterhub/bin/pip3.10 install \
+      jupyterhub==4.1.5
+  args:
+    creates: /opt/jupyterhub/bin/jupyterhub-singleuser
+
+- name: Ensure symlinks for JupyterHub/Lab executables in /usr/local/bin
+  file:
+    src: "/opt/jupyterhub/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+    force: yes
+  loop:
+    - jupyterhub-singleuser

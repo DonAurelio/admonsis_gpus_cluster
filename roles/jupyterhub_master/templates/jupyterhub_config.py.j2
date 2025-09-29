@@ -1,34 +1,53 @@
-# Configuration file for jupyterhub.
-
+# Configuration file for JupyterHub
 c = get_config()
 
-# Customized
-
-# The LocalAuthenticator is a special kind of Authenticator that has the ability
-# to manage users on the local system. When you try to add a new user to the Hub,
-# a LocalAuthenticator will check if the user already exists. If you set the
-# configuration value, create_system_users, to True in the configuration file,
-# the LocalAuthenticator has the ability to add users to the system. The setting
-# in the config file is:
+# ----------------------------------------------------------------------------
+# Authenticator
+# ----------------------------------------------------------------------------
+# LocalAuthenticator lets JupyterHub authenticate system users.
+# If set to True, JupyterHub will create missing users on the system.
 c.LocalAuthenticator.create_system_users = True
 
-# Each Authenticator may have different ways of determining whether a user is an
-# administrator. By default, JupyterHub uses the PAMAuthenticator which provides
-# the admin_groups option and can set administrator status based on a user group.
-# For example, we can let any user in the wheel group be an admin:
+# PAMAuthenticator can mark some users as admins if they belong to a group.
+# Example: any user in the "wheel" group is admin.
+# Replace {{ jupyterhub_admin_groups }} with the actual group name from Ansible vars.
 c.PAMAuthenticator.admin_groups = { {{ jupyterhub_admin_groups }} }
 
-## The command used for starting the single-user server.
-c.Spawner.cmd = ['/opt/jupyterhub/bin/jupyterhub-singleuser']
+# ----------------------------------------------------------------------------
+# Spawner: using SlurmSpawner to launch jobs on worker nodes via SLURM
+# ----------------------------------------------------------------------------
+# SlurmSpawner submits single-user notebook servers as SLURM jobs.
+c.JupyterHub.spawner_class = 'batchspawner.SlurmSpawner'
 
-## The public facing URL of the whole JupyterHub application.
+# Path to the single-user server binary
+c.Spawner.cmd = ['/usr/local/bin/jupyterhub-singleuser']
 
-{% if not jupyterhub_letsencrypt_domain_name %}
-# HTTP connection
-# c.JupyterHub.bind_url = 'http://0.0.0.0:8000'
-{% else %}
-# HTTPS connection
-c.JupyterHub.bind_url = 'https://0.0.0.0'
-c.JupyterHub.ssl_key = '/etc/letsencrypt/live/{{ jupyterhub_letsencrypt_domain_name }}/privkey.pem'
-c.JupyterHub.ssl_cert = '/etc/letsencrypt/live/{{ jupyterhub_letsencrypt_domain_name }}/fullchain.pem'
-{% endif %}
+# Optional: specify the SLURM partition to run jobs
+# You can also set this via environment variable (see below).
+# Example: c.SlurmSpawner.partition = 'compute'
+
+# ----------------------------------------------------------------------------
+# SLURM Job Template (minimal)
+# ----------------------------------------------------------------------------
+# By default, SlurmSpawner builds a job script for srun/sbatch.
+# You can customize resources here.
+c.SlurmSpawner.batch_script = '''#!/bin/bash
+#SBATCH --job-name=jupyterhub-singleuser
+#SBATCH --output=/home/%u/jupyterhub-%j.out
+#SBATCH --error=/home/%u/jupyterhub-%j.err
+#SBATCH --partition=local
+#SBATCH --time=01:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+
+# Load required modules (optional, if using module system)
+# module load python/3.10
+
+exec {cmd}
+'''
+
+# ----------------------------------------------------------------------------
+# Hub Network
+# ----------------------------------------------------------------------------
+# Bind JupyterHub on all interfaces, port 8000
+c.JupyterHub.bind_url = 'http://0.0.0.0:8000'

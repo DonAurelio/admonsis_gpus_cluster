@@ -1,15 +1,15 @@
 - name: Update ubuntu
   apt: update_cache=yes
 
-- name: Python tutorial system requirements
+- name: Python requirements
   apt:
     pkg:
       - build-essential
       - libssl-dev 
       - libffi-dev 
-      - python3-dev
+      - python3.10-dev
       - python3.10-venv
-      - python3.10-passlib
+      - npm
     state: present
 
 - name: Create virtualenv in /opt/jupyterhub/
@@ -20,3 +20,20 @@
     path: /opt/jupyterhub/etc/jupyterhub/
     recurse: true
     state: directory
+
+- name: Install JupyterHub/JuppyterLab
+  command: |
+    /opt/jupyterhub/bin/pip3.10 install \
+      wheel \
+      jupyterhub==4.1.5 \
+      jupyterlab \
+      ipywidgets
+
+- name: Ensure symlinks for JupyterHub/Lab executables in /usr/local/bin
+  file:
+    src: "/opt/jupyterhub/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+    force: yes
+  loop:
+    - jupyterhub-singleuser

@@ -16,21 +16,20 @@
   vars_files:
     - ./vars/common.yml
 
-# - name: Setting up slave nodes
-#   tags: slave_nodes
-#   hosts: 
-#     - ss-01
-#     - ss-02
-#     - ss-03
-#   user: aavivas
-#   become: true
-#   roles:
-#     - network
-#     - nfs_common
-#     - nfs_slave
-#     - slurm_common
-#     - slurm_slave
-#     - jupyterhub_common
-#     - users_slave
-#   vars_files:
-#     - ./vars/common.yml
+- name: Setting up slave nodes
+  tags: slave_nodes
+  hosts: 
+    - ss-01
+  user: aavivas
+  become: true
+  roles:
+    - network
+    - nfs_common
+    - nfs_slave
+    - slurm_common
+    - slurm_slave
+    - jupyterhub_common
+    - jupyterhub_slave
+    - users_slave
+  vars_files:
+    - ./vars/common.yml

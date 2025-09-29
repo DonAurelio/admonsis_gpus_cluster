@@ -4,49 +4,40 @@
   tags:
   - hostname
 
-- name: Update /etc/hosts
-  shell: "grep -qxF \"{{ item.ip }} {{ item.name }}\" /etc/hosts | echo \"{{ item.ip }} {{ item.name }}\" >> /etc/hosts "
-  with_items: "{{ cluster_hostnames }}"
-  register: cmdln
-  check_mode: no
-  tags:
-  - hostname
-
-- name: Ensure firewalld is installed
+- name: Ensure ufw is installed
   package:
-    name: firewalld
+    name: ufw
     state: present
   tags:
     - firewall
 
-- name: Enabling communication between nodes through the firewall
-  shell: "firewall-cmd --zone=trusted --add-source={{ item.ip }} --permanent"
-  with_items: "{{ cluster_hostnames }}"
-  register: cmdln
-  check_mode: no
+- name: Enable ufw
+  ufw:
+    state: enabled
   tags:
-  - firewall
+    - firewall
 
-- name: Reload the firewall
-  shell: "firewall-cmd --reload"
-  register: cmdln
-  check_mode: no
+- name: Allow communication between cluster nodes
+  ufw:
+    rule: allow
+    from_ip: "{{ hostvars[item].ansible_host }}"
+  loop: "{{ groups['cluster'] }}"
+  when: hostvars[item].ansible_host is defined
   tags:
-  - firewall
+    - firewall
 
-- name: Update ubuntu
-  apt: update_cache=yes
-
-- name: Enabling HTTP through the firewall
-  shell: "firewall-cmd --zone=public --add-service http"
-  register: cmdln
-  check_mode: no
+- name: Allow HTTP through the firewall
+  ufw:
+    rule: allow
+    port: "8000"
+    proto: tcp
   tags:
-  - firewall
+    - firewall
 
-- name: Enabling HTTPS through the firewall
-  shell: "firewall-cmd --zone=public --add-service https"
-  register: cmdln
-  check_mode: no
-  tags:
-  - firewall
+# - name: Allow HTTPS through the firewall
+#   ufw:
+#     rule: allow
+#     port: "443"
+#     proto: tcp
+#   tags:
+#     - firewall

@@ -1,8 +1,3 @@
-# CLUSTER 
-# Used to update /etc/hosts
-cluster_hostnames:
-  - { name: ss-00, ip: '172.24.42.14' }
-  - { name: ss-01, ip: '172.24.42.201' }
 nfs_exports:
   # users accounts
   - /home *(rw,sync,no_root_squash,no_subtree_check)
@@ -31,10 +26,6 @@ users_seq_end: 20
 # Delete with "absent"
 users_state: present
 users_passwd: ss@2024*
-
-# MPI
-mpi_temp_dir: /tmp/openmpi
-mpi_inst_dir: /opt/openmpi-3.1.2
 
 # JUPYTERHUB
 # Comma separed user groups with admin acces in jupyterhub.
