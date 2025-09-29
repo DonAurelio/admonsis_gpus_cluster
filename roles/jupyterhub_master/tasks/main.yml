@@ -1,0 +1,39 @@
+- name: Create /opt/jupyterhub/etc/jupyterhub/jupyterhub_config.py
+  template:
+    src: jupyterhub_config.py.j2
+    dest: /opt/jupyterhub/etc/jupyterhub/jupyterhub_config.py
+    mode: 0755
+
+- name: Install JupyterHub/JuppyterLab
+  command: |
+    /opt/jupyterhub/bin/pip3.10 install \
+      wheel \
+      jupyterhub==4.1.5 \
+      jupyterlab \
+      ipywidgets
+
+- name: Install configurable-http-proxy
+  command: npm install -g configurable-http-proxy@4.6.3
+
+- name: Ensure '/opt/jupyterhub/etc/systemd' dir exists
+  file: 
+    path: /opt/jupyterhub/etc/systemd
+    recurse: true
+    state: directory
+
+- name: Create jupyterhub.service
+  template:
+    src: jupyterhub.service.j2
+    dest: /opt/jupyterhub/etc/systemd/jupyterhub.service
+    mode: 0755
+
+- name: Install /opt/jupyterhub/etc/systemd/jupyterhub.service
+  file: 
+    src: /opt/jupyterhub/etc/systemd/jupyterhub.service
+    dest: /etc/systemd/system/jupyterhub.service
+    state: link
+
+- name: Make sure JupyterHub service unit is running
+  service:
+    state: started
+    name: jupyterhub.service

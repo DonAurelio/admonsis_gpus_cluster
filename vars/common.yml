@@ -1,0 +1,44 @@
+# CLUSTER 
+# Used to update /etc/hosts
+cluster_hostnames:
+  - { name: ss-00, ip: '172.24.42.14' }
+  - { name: ss-01, ip: '172.24.42.201' }
+nfs_exports:
+  # users accounts
+  - /home *(rw,sync,no_root_squash,no_subtree_check)
+  # munge authentication keys
+  - /etc/munge *(rw,sync,no_root_squash,no_subtree_check)
+  # for slurm.confg and gres.conf files 
+  - /etc/slurm *(rw,sync,no_root_squash,no_subtree_check)
+nfs_imports:
+  - { name: /home, src: 'ss-00:/home', type: nfs }
+  - { name: /home, src: 'ss-00:/home', type: nfs }
+  - { name: /etc/munge, src: 'ss-00:/etc/munge', type: nfs }
+  - { name: /etc/slurm, src: 'ss-00:/etc/slurm', type: nfs }
+
+# SLURM
+slurm_cluster_name: galaxy.cluster
+slurm_master_hostname: ss-00
+# slurm_compute_cpus: 2
+# slurm_compute_mem: 1963
+slurm_user_passwd: jlDmPv
+munge_user_passwd: jlDmPv
+
+# USERS
+users_seq_format: ss%d
+users_seq_start: 1
+users_seq_end: 20
+# Delete with "absent"
+users_state: present
+users_passwd: ss@2024*
+
+# MPI
+mpi_temp_dir: /tmp/openmpi
+mpi_inst_dir: /opt/openmpi-3.1.2
+
+# JUPYTERHUB
+# Comma separed user groups with admin acces in jupyterhub.
+# Example: "'wheel','vagrant'"
+jupyterhub_admin_groups: "'ss1','ss2','ss3','ss4','ss5'"
+# Use for example, chi-dyn-192-5-86-230.uc.chameleoncloud.org, if using chameleon
+jupyterhub_letsencrypt_domain_name: ''
