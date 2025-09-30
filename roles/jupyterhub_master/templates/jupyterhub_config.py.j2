@@ -24,6 +24,10 @@ c.Spawner.environment = {
     'JUPYTERHUB_API_URL': 'http://ss-00:8000/hub/api'
 }
 
+# Restrict access to home directory only
+c.Spawner.default_url = '/lab'
+c.Spawner.notebook_dir = '/home/{username}'
+
 # ----------------------------------------------------------------------------
 # SLURM Job Template (minimal)
 # ----------------------------------------------------------------------------
@@ -38,13 +42,13 @@ c.SlurmSpawner.batch_script = '''#!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 
-# {cmd} expands to the launch command for the single-user server.
+# cmd expands to the launch command for the single-user server.
 # Example: "batchspawner-singleuser --port=8891"
 #
 # How it works:
 # - JupyterHub allocates a random available TCP port on the node.
 # - It passes this port to the Spawner.
-# - The Spawner substitutes the value into {port} (inside {cmd}).
+# - The Spawner substitutes the value into port (inside cmd).
 # - The final command ensures that the single-user server binds to the
 #   allocated port so the Hub can connect to it.
 exec {cmd}
