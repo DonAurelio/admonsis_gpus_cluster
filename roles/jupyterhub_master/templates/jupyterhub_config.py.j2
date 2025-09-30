@@ -10,8 +10,8 @@ c.LocalAuthenticator.create_system_users = True
 
 # PAMAuthenticator can mark some users as admins if they belong to a group.
 # Example: any user in the "wheel" group is admin.
-# Replace {{ jupyterhub_admin_groups }} with the actual group name from Ansible vars.
-c.PAMAuthenticator.admin_groups = { {{ jupyterhub_admin_groups }} }
+# Replace 'ss1','ss2','ss3','ss4','ss5' with the actual group name from Ansible vars.
+c.PAMAuthenticator.admin_groups = { 'ss1','ss2','ss3','ss4','ss5' }
 
 # ----------------------------------------------------------------------------
 # Spawner: using SlurmSpawner to launch jobs on worker nodes via SLURM
@@ -19,12 +19,10 @@ c.PAMAuthenticator.admin_groups = { {{ jupyterhub_admin_groups }} }
 # SlurmSpawner submits single-user notebook servers as SLURM jobs.
 c.JupyterHub.spawner_class = 'batchspawner.SlurmSpawner'
 
-# Path to the single-user server binary
-c.Spawner.cmd = ['/usr/local/bin/jupyterhub-singleuser']
-
-# Optional: specify the SLURM partition to run jobs
-# You can also set this via environment variable (see below).
-# Example: c.SlurmSpawner.partition = 'compute'
+# Extra environment variables that will be passed to the single-user servers
+c.Spawner.environment = {
+    'JUPYTERHUB_API_URL': 'http://ss-00:8000/hub/api'
+}
 
 # ----------------------------------------------------------------------------
 # SLURM Job Template (minimal)
@@ -32,7 +30,7 @@ c.Spawner.cmd = ['/usr/local/bin/jupyterhub-singleuser']
 # By default, SlurmSpawner builds a job script for srun/sbatch.
 # You can customize resources here.
 c.SlurmSpawner.batch_script = '''#!/bin/bash
-#SBATCH --job-name=jupyterhub-singleuser
+#SBATCH --job-name=singleuser
 #SBATCH --output=/home/%u/jupyterhub-%j.out
 #SBATCH --error=/home/%u/jupyterhub-%j.err
 #SBATCH --partition=local
@@ -40,9 +38,15 @@ c.SlurmSpawner.batch_script = '''#!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 
-# Load required modules (optional, if using module system)
-# module load python/3.10
-
+# {cmd} expands to the launch command for the single-user server.
+# Example: "batchspawner-singleuser --port=8891"
+#
+# How it works:
+# - JupyterHub allocates a random available TCP port on the node.
+# - It passes this port to the Spawner.
+# - The Spawner substitutes the value into {port} (inside {cmd}).
+# - The final command ensures that the single-user server binds to the
+#   allocated port so the Hub can connect to it.
 exec {cmd}
 '''
 
@@ -51,3 +55,4 @@ exec {cmd}
 # ----------------------------------------------------------------------------
 # Bind JupyterHub on all interfaces, port 8000
 c.JupyterHub.bind_url = 'http://0.0.0.0:8000'
+

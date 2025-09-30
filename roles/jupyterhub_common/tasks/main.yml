@@ -38,3 +38,6 @@
     force: yes
   loop:
     - jupyterhub-singleuser
+    - batchspawner-singleuser
+  tags:
+    - jupyterhub_symlinks
