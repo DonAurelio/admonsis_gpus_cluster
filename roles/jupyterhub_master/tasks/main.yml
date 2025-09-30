@@ -29,3 +29,29 @@
   service:
     state: started
     name: jupyterhub.service
+
+- name: Backup original page.html
+  copy:
+    src: /opt/jupyterhub/share/jupyterhub/templates/page.html
+    dest: /opt/jupyterhub/share/jupyterhub/templates/page.html.back
+    remote_src: yes
+    backup: no
+    force: yes
+
+- name: Deploy custom page.html
+  copy:
+    src: files/page.html        # from your Ansible "files/" directory
+    dest: /opt/jupyterhub/share/jupyterhub/templates/page.html
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes                 # keep a copy of the replaced version
+
+- name: Deploy custom logo
+  copy:
+    src: files/logo-disc.webp   # from your Ansible "files/" directory
+    dest: /opt/jupyterhub/share/jupyterhub/static/images/logo-disc.webp
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
