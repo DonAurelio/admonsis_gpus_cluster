@@ -67,3 +67,34 @@
    ```sh
    ansible-playbook -K main.yml --tags "compute_nodes"
    ```
+
+## Configure SLURM
+
+1. Connect via SSH to the compute node and check its specifications:
+
+   ```sh
+   slurmd -C
+
+   NodeName=ss-01 CPUs=4 Boards=1 SocketsPerBoard=2 CoresPerSocket=2 ThreadsPerCore=1 RealMemory=7949
+   ```
+
+2. Return to the head node and update the `slurm.conf` file. Add the compute node specifications, making sure to append `State=UNKNOWN` at the end. Each compute node requires its own line:
+
+   ```sh
+   sudo vim /etc/slurm/slurm.conf
+
+   # COMPUTE NODES
+   NodeName=ss-01 CPUs=4 Boards=1 SocketsPerBoard=2 CoresPerSocket=2 ThreadsPerCore=1 RealMemory=7949 State=UNKNOWN
+   ```
+
+3. Restart the SLURM controller (`slurmctld`) and `munge` services on the head node:
+
+   ```sh
+   sudo systemctl restart slurmctld munge
+   ```
+
+4. Restart the `slurmd` service on the compute nodes using Ansible:
+
+   ```sh
+   ansible -K -b -a "sudo systemctl restart slurmd"
+   ```

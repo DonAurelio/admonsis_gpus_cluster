@@ -9,7 +9,6 @@
       - libffi-dev 
       - python3.10-dev
       - python3.10-venv
-      - npm
     state: present
 
 - name: Create virtualenv in /opt/jupyterhub/
