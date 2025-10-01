@@ -1,5 +1,5 @@
 - name: Setting up master node
-  tags: master_node
+  tags: head_node
   hosts:
     - ss-00
   user: aa_vivas
@@ -17,7 +17,7 @@
     - ./vars/common.yml
 
 - name: Setting up slave nodes
-  tags: slave_nodes
+  tags: compute_nodes
   hosts: 
     - ss-01
   user: aavivas
