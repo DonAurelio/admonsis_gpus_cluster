@@ -15,19 +15,20 @@
   vars_files:
     - ./vars/common.yml
 
-# - name: Compute nodes setup
-#   tags: compute_nodes
-#   hosts: 
-#     - ss-01
-#   become: true
-#   roles:
-#     - network
-#     - nfs_common
-#     - nfs_slave
-#     - slurm_common
-#     - slurm_slave
-#     - jupyterhub_common
-#     - jupyterhub_slave
-#     - users_slave
-#   vars_files:
-#     - ./vars/common.yml
+- name: Compute nodes setup
+  tags: compute_nodes
+  hosts: 
+    - ss-01
+  become: true
+  roles:
+    - network
+    - nfs_common
+    - nfs_slave
+    - slurm_common
+    - slurm_slave
+    - jupyterhub_common
+    - jupyterhub_slave
+    - users_slave
+    - docker
+  vars_files:
+    - ./vars/common.yml
