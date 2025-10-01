@@ -96,5 +96,5 @@
 4. Restart the `slurmd` service on the compute nodes using Ansible:
 
    ```sh
-   ansible -K -b -a "sudo systemctl restart slurmd"
+   ansible -K -b -a "sudo systemctl restart slurmd" "ss-01"
    ```

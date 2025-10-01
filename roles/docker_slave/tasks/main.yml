@@ -1,18 +1,3 @@
-- name: Install prerequisites
-  apt:
-    name:
-      - curl
-      - gnupg
-      - ca-certificates
-      - software-properties-common
-    state: present
-    update_cache: yes
-
-- name: Install Docker (using get.docker.com script)
-  shell: curl -fsSL https://get.docker.com | sh
-  args:
-    creates: /usr/bin/docker
-
 - name: Add NVIDIA Container Toolkit repository (GPG key + repo)
   shell: |
     distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
