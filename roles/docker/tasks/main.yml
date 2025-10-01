@@ -1,0 +1,44 @@
+- name: Install prerequisites
+  apt:
+    name:
+      - curl
+      - gnupg
+      - ca-certificates
+      - software-properties-common
+    state: present
+    update_cache: yes
+
+- name: Install Docker (using get.docker.com script)
+  shell: curl -fsSL https://get.docker.com | sh
+  args:
+    creates: /usr/bin/docker
+
+- name: Add NVIDIA Container Toolkit repository (GPG key + repo)
+  shell: |
+    distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+    curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -
+    curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list \
+      | tee /etc/apt/sources.list.d/nvidia-docker.list
+    apt-get update -y
+
+- name: Install nvidia-docker2
+  apt:
+    name: nvidia-docker2
+    state: present
+    update_cache: yes
+
+- name: Restart Docker
+  systemd:
+    name: docker
+    state: restarted
+    enabled: yes
+
+- name: Verify NVIDIA GPU access inside Docker
+  shell: docker run --rm --gpus all nvidia/cuda:13.0.1-base-ubuntu22.04 nvidia-smi
+  register: nvidia_smi_output
+  changed_when: false
+  failed_when: "'NVIDIA-SMI' not in nvidia_smi_output.stdout"
+
+- name: Show nvidia-smi output
+  debug:
+    msg: "{{ nvidia_smi_output.stdout }}"
