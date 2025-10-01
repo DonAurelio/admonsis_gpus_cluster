@@ -4,44 +4,25 @@
     dest: /opt/jupyterhub/etc/jupyterhub/jupyterhub_config.py
     mode: 0755
 
-- name: Remove old Node.js and libnode packages
-  apt:
-    name:
-      - nodejs
-      - libnode-dev
-    state: absent
-    purge: yes
-  ignore_errors: yes
-  tags:
-    - nodejs
+- name: Remove old Node.js, install Node.js 18, npm, and configurable-http-proxy
+  shell: |
+    apt-get remove --purge -y nodejs libnode-dev
+    apt-get autoremove -y
+    apt-get clean
+    rm -rf /var/cache/apt/archives/*
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+    apt-get update
+    apt-get install -y nodejs npm
+  args:
+    warn: false
 
-- name: Add NodeSource GPG key
-  apt_key:
-    url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
-    state: present
-  tags:
-    - nodejs
+- name: Print Node.js version
+  command: node -v
+  register: node_version
 
-- name: Add NodeSource Node.js 18 repository
-  apt_repository:
-    repo: "deb https://deb.nodesource.com/node_18.x {{ ansible_distribution_release }} main"
-    state: present
-    filename: nodesource-nodejs
-  tags:
-    - nodejs
-
-- name: Update apt cache
-  apt:
-    update_cache: yes
-  tags:
-    - nodejs
-
-- name: Install Node.js 18
-  apt:
-    name: nodejs
-    state: present
-  tags:
-    - nodejs
+- name: Show Node.js version
+  debug:
+    msg: "Installed Node.js version is {{ node_version.stdout }}"
 
 - name: Install configurable-http-proxy
   npm:
